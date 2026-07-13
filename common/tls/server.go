@@ -92,8 +92,9 @@ func ServerHandshake(ctx context.Context, conn net.Conn, config ServerConfig) (C
 		return nil, err
 	}
 	nextProtos := config.NextProtos()
+	negotiated := tlsConn.ConnectionState().NegotiatedProtocol
+	println("[DEBUG TLS HANDSHAKE] nextProtos:", len(nextProtos), "protos:", nextProtos, "negotiated:", negotiated)
 	if len(nextProtos) > 0 {
-		negotiated := tlsConn.ConnectionState().NegotiatedProtocol
 		matched := false
 		for _, proto := range nextProtos {
 			if proto == negotiated {
@@ -101,7 +102,9 @@ func ServerHandshake(ctx context.Context, conn net.Conn, config ServerConfig) (C
 				break
 			}
 		}
+		println("[DEBUG TLS HANDSHAKE] matched:", matched)
 		if !matched {
+			println("[DEBUG TLS HANDSHAKE] closing connection because ALPN did not match")
 			_ = tlsConn.Close()
 			return nil, os.ErrInvalid
 		}
