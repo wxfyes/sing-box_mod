@@ -368,6 +368,24 @@ func NewSTDServer(ctx context.Context, logger log.ContextLogger, options option.
 		keyPath:               options.KeyPath,
 		echKeyPath:            echKeyPath,
 	}
+	if len(options.ALPN) > 0 {
+		serverConfig.config.VerifyConnection = func(state tls.ConnectionState) error {
+			serverConfig.access.RLock()
+			protos := serverConfig.config.NextProtos
+			serverConfig.access.RUnlock()
+
+			if len(protos) == 0 {
+				return nil
+			}
+			negotiated := state.NegotiatedProtocol
+			for _, proto := range protos {
+				if proto == negotiated {
+					return nil
+				}
+			}
+			return os.ErrInvalid
+		}
+	}
 	serverConfig.config.GetConfigForClient = func(info *tls.ClientHelloInfo) (*tls.Config, error) {
 		serverConfig.access.Lock()
 		defer serverConfig.access.Unlock()
