@@ -76,22 +76,6 @@ func ServerHandshake(ctx context.Context, conn net.Conn, config ServerConfig) (C
 	isTLS := n >= 2 && peeked[0] == 0x16 && peeked[1] == 0x03
 
 	if !isTLS {
-		// Non-TLS probe (plain HTTP or random scanner). Mimic Nginx 400 Bad Request
-		dateStr := time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
-		response := "HTTP/1.1 400 Bad Request\r\n" +
-			"Server: nginx\r\n" +
-			"Date: " + dateStr + "\r\n" +
-			"Content-Type: text/html\r\n" +
-			"Content-Length: 150\r\n" +
-			"Connection: close\r\n\r\n" +
-			"<html>\r\n" +
-			"<head><title>400 Bad Request</title></head>\r\n" +
-			"<body>\r\n" +
-			"<center><h1>400 Bad Request</h1></center>\r\n" +
-			"<hr><center>nginx</center>\r\n" +
-			"</body>\r\n" +
-			"</html>\r\n"
-		_, _ = conn.Write([]byte(response))
 		_ = conn.Close()
 		return nil, os.ErrInvalid
 	}

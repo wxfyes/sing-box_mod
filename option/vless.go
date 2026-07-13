@@ -8,6 +8,7 @@ type VLESSInboundOptions struct {
 	Transport *V2RayTransportOptions   `json:"transport,omitempty"`
 	Flow      string                   `json:"flow,omitempty"`
 	Fallback  *ServerOptions           `json:"fallback,omitempty"`
+	FallbackForALPN map[string]*ServerOptions `json:"fallback_for_alpn,omitempty"`
 }
 
 type VLESSUser struct {
