@@ -91,6 +91,21 @@ func ServerHandshake(ctx context.Context, conn net.Conn, config ServerConfig) (C
 	if err != nil {
 		return nil, err
 	}
+	nextProtos := config.NextProtos()
+	if len(nextProtos) > 0 {
+		negotiated := tlsConn.ConnectionState().NegotiatedProtocol
+		matched := false
+		for _, proto := range nextProtos {
+			if proto == negotiated {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			_ = tlsConn.Close()
+			return nil, os.ErrInvalid
+		}
+	}
 	readWaitConn, err := badtls.NewReadWaitConn(tlsConn)
 	if err == nil {
 		return readWaitConn, nil
